@@ -1,0 +1,29 @@
+@startuml SSD_MonitorearPostura
+title Diagrama de Secuencia del Sistema\nCU: Monitorear Postura
+
+skinparam style strictuml
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+actor "Usuario" as U
+participant ":Sistema" as S
+
+U -> S : iniciarMonitoreo()
+activate S
+S --> U : mostrarVentanaWebcam(videoEnVivo, landmarks)
+
+loop cada 3 minutos
+    S -> S : analizarPostura(frame)
+
+    alt postura incorrecta
+        S --> U : notificarPosturaIncorrecta(tipoError, recomendacion)
+    else postura correcta
+        S --> U : mostrarEstado("Postura correcta")
+    end
+end
+
+U -> S : detenerMonitoreo()
+S --> U : cerrarVentana()
+deactivate S
+
+@enduml

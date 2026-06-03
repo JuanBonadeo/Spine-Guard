@@ -1,0 +1,25 @@
+@startuml SSD_ConfigurarSensibilidad
+title Diagrama de Secuencia del Sistema\nCU: Configurar Sensibilidad
+
+skinparam style strictuml
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+actor "Usuario" as U
+participant ":Sistema" as S
+
+U -> S : abrirConfiguracion()
+activate S
+S --> U : mostrarConfiguracionActual(umbralInclinacion, intervaloNotificacion)
+
+U -> S : modificarUmbral(nuevoUmbral)
+S --> U : confirmarCambio(umbralActualizado)
+
+U -> S : modificarIntervalo(nuevoIntervalo)
+S --> U : confirmarCambio(intervaloActualizado)
+
+U -> S : guardarConfiguracion()
+S --> U : confirmarGuardado()
+deactivate S
+
+@enduml

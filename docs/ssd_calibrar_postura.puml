@@ -1,0 +1,27 @@
+@startuml SSD_CalibrarPostura
+title Diagrama de Secuencia del Sistema\nCU: Calibrar Postura de Referencia
+
+skinparam style strictuml
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+actor "Usuario" as U
+participant ":Sistema" as S
+
+U -> S : iniciarCalibracion()
+activate S
+S --> U : mostrarInstrucciones("Sientese derecho y presione Calibrar")
+
+U -> S : confirmarPosturaCorrecta()
+S -> S : capturarAngulos(frameActual)
+S --> U : mostrarReferencia(angulosCabeza, angulosHombros, anguloEspalda)
+
+alt calibracion exitosa
+    S --> U : confirmarCalibracion("Postura de referencia guardada")
+else no se detecta persona
+    S --> U : mostrarError("No se detecta persona en cámara")
+end
+
+deactivate S
+
+@enduml
