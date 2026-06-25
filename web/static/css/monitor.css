@@ -1,0 +1,155 @@
+/* Vista Monitor — replica de ui/views/monitor_view.py */
+
+.monitor {
+  display: grid;
+  grid-template-columns: 1fr 240px;
+  gap: 16px;
+  padding: 16px;
+  height: 100%;
+}
+
+/* --- Video --- */
+.video-card {
+  position: relative;
+  background: #000;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+  min-height: 0;
+}
+#video { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+/* --- Overlay de calibracion (replica de calibration_modal.py) --- */
+.calib-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, .55);
+  backdrop-filter: blur(6px);
+}
+.calib-overlay.hidden { display: none; }
+.calib-card {
+  background: var(--bg-card);
+  border-radius: 16px;
+  width: min(420px, 86%);
+  padding: 28px 24px;
+  text-align: center;
+  box-shadow: var(--card-shadow);
+}
+.calib-card h2 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+.calib-sub { font-size: 14px; color: var(--text-secondary); margin-bottom: 20px; }
+.progress {
+  width: 300px; max-width: 100%; height: 8px;
+  background: var(--bg-input); border-radius: 4px;
+  margin: 0 auto 8px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; width: 0;
+  background: var(--accent); border-radius: 4px;
+  transition: width .2s ease;
+}
+.calib-pct {
+  display: block; font-size: 14px; font-weight: 700;
+  color: var(--accent); margin-bottom: 8px;
+}
+.calib-hint { font-size: 12px; color: var(--text-muted); }
+
+/* --- Panel derecho (240px, transparente como el desktop) --- */
+.side-panel {
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+/* HealthRing en SVG (replica de health_ring.py) */
+.health-ring { position: relative; width: 150px; height: 150px; margin: 8px auto 4px; }
+.ring-svg { transform: rotate(-90deg); display: block; }
+.ring-track, .ring-progress { fill: none; stroke-width: 10; stroke-linecap: butt; }
+.ring-track { stroke: var(--ring-track); }
+.ring-progress {
+  stroke: var(--success);
+  stroke-dasharray: 439.82;          /* 2 * PI * 70 */
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset .4s ease, stroke .4s ease;
+}
+.ring-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.ring-pct { font-size: 28px; font-weight: 700; color: var(--success); line-height: 1; }
+.ring-status { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+
+.status-text {
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--success);
+  margin: 4px 8px 12px;
+  min-height: 20px;
+}
+
+.section-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin: 0 6px 6px;
+}
+
+/* MetricBadge (replica de metric_badge.py) */
+.badges { display: flex; flex-direction: column; gap: 4px; }
+.badge {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-card);
+  border-radius: var(--radius-ctl);
+  padding: 8px 10px;
+  min-height: 32px;
+}
+.badge-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--success);
+  transition: background .3s ease, box-shadow .3s ease;
+}
+.badge.problem .badge-dot { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
+.badge-name { font-size: 12px; color: var(--text-primary); }
+.badge-value { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); }
+
+.side-panel .muted { margin: 2px 10px; }
+.side-panel .caption { margin: 6px 10px 0; min-height: 13px; }
+
+/* --- Toast (replica de toast.py) --- */
+.toast {
+  position: fixed;
+  left: 50%; bottom: 24px;
+  transform: translateX(-50%);
+  background: var(--danger);
+  color: #fff;
+  padding: 14px 22px;
+  border-radius: var(--radius-card);
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: var(--card-shadow);
+  z-index: 100;
+  transition: opacity .3s ease, transform .3s ease;
+}
+.toast.info { background: var(--accent); }
+.toast.warn { background: var(--warning); color: #1a1a1a; }
+.toast.success { background: var(--success); color: #0a2a12; }
+.toast.hidden {
+  opacity: 0;
+  transform: translateX(-50%) translateY(20px);
+  pointer-events: none;
+}
+
+/* --- Responsivo --- */
+@media (max-width: 900px) {
+  .monitor { grid-template-columns: 1fr; height: auto; }
+  .video-card { aspect-ratio: 4 / 3; }
+  .side-panel { width: auto; }
+}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/monitor.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="monitor">
+  <section class="video-card">
+    <img id="video" src="{{ url_for('video_feed') }}" alt="Camara">
+    <div id="calib-overlay" class="calib-overlay">
+      <div class="calib-card">
+        <h2>Calibrando postura</h2>
+        <p class="calib-sub">Senta derecho y mira la pantalla</p>
+        <div class="progress"><div id="calib-bar" class="progress-fill"></div></div>
+        <span id="calib-pct" class="calib-pct">0%</span>
+        <p class="calib-hint">Mantene la posicion...</p>
+      </div>
+    </div>
+  </section>
+
+  <aside class="side-panel">
+    <div class="health-ring">
+      <svg class="ring-svg" viewBox="0 0 150 150" width="150" height="150">
+        <circle class="ring-track" cx="75" cy="75" r="70"></circle>
+        <circle id="ring-progress" class="ring-progress" cx="75" cy="75" r="70"></circle>
+      </svg>
+      <div class="ring-center">
+        <span id="ring-pct" class="ring-pct">100%</span>
+        <span id="ring-status" class="ring-status">Excelente</span>
+      </div>
+    </div>
+
+    <div id="status-text" class="status-text">Iniciando...</div>
+
+    <hr class="divider">
+
+    <div class="section-label">Metricas</div>
+    <div id="badges" class="badges"></div>
+
+    <hr class="divider">
+
+    <div id="session" class="muted">Sesion: 0 min</div>
+    <div id="goodpct" class="muted">Buenos: 0%</div>
+    <div id="confidence" class="caption"></div>
+  </aside>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/monitor.js') }}"></script>
+{% endblock %}
