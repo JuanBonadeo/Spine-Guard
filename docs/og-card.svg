@@ -1,0 +1,38 @@
+<svg viewBox="0 0 1280 640" width="1280" height="640" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0" y="0" width="1280" height="640" fill="#1E1E1E"/>
+  <circle cx="1040" cy="250" r="320" fill="#007AFF" opacity="0.07"/>
+  <circle cx="1010" cy="300" r="210" fill="#30D158" opacity="0.06"/>
+
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">
+
+    <!-- kicker -->
+    <circle cx="104" cy="146" r="7" fill="#30D158"/>
+    <text x="124" y="153" fill="#30D158" font-size="20" font-weight="700" letter-spacing="2">MONITOR DE POSTURA EN TIEMPO REAL</text>
+
+    <!-- title -->
+    <text x="92" y="258" fill="#FFFFFF" font-size="92" font-weight="800">Spine Guard</text>
+
+    <!-- tagline -->
+    <text x="96" y="318" fill="#C7C7CC" font-size="30">Vision por computadora que te avisa</text>
+    <text x="96" y="358" fill="#C7C7CC" font-size="30">cuando te encorvas frente a la compu.</text>
+
+    <!-- pills -->
+    <rect x="96" y="404" width="342" height="50" rx="25" fill="#2A2A2A" stroke="#4A4A4A"/>
+    <text x="267" y="436" text-anchor="middle" fill="#E5E5EA" font-size="21">Escritorio · CustomTkinter</text>
+    <rect x="458" y="404" width="190" height="50" rx="25" fill="#2A2A2A" stroke="#30D158"/>
+    <text x="553" y="436" text-anchor="middle" fill="#E5E5EA" font-size="21">Web · Flask</text>
+
+    <!-- footer -->
+    <line x1="96" y1="540" x2="720" y2="540" stroke="#2C2C2C" stroke-width="2"/>
+    <text x="96" y="582" fill="#6E6E6E" font-size="22">UTN — Soporte a la Gestion de Datos con Programacion Visual</text>
+
+    <!-- health ring (signature de la app) -->
+    <circle cx="1010" cy="300" r="150" fill="none" stroke="#3A3A3A" stroke-width="20"/>
+    <circle cx="1010" cy="300" r="150" fill="none" stroke="#30D158" stroke-width="20"
+            stroke-linecap="round" stroke-dasharray="942.48" stroke-dashoffset="141.4"
+            transform="rotate(-90 1010 300)"/>
+    <text x="1010" y="318" text-anchor="middle" fill="#30D158" font-size="78" font-weight="800">85%</text>
+    <text x="1010" y="356" text-anchor="middle" fill="#A0A0A0" font-size="24">Buena postura</text>
+
+  </g>
+</svg>
