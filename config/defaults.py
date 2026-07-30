@@ -1,6 +1,18 @@
 CAMERA_INDEX = 0
 CHECK_INTERVAL_SEC = 180
-BAD_POSTURE_FRAMES = 10
+
+# El bucle de analisis corre a ~30 fps (after(33ms) en escritorio, mismo ritmo
+# en la web). Se usa para convertir el "tiempo encorvado antes de avisar"
+# (configurable, en segundos) a frames consecutivos de mala postura.
+ANALYSIS_FPS = 30
+BAD_POSTURE_SEC = 1.0
+BAD_POSTURE_FRAMES = int(BAD_POSTURE_SEC * ANALYSIS_FPS)
+
+
+def frames_from_seconds(sec: float) -> int:
+    """Segundos de mala postura continua -> frames consecutivos (>=1)."""
+    return max(1, round(float(sec) * ANALYSIS_FPS))
+
 
 AUTO_CALIBRATION_FRAMES = 90
 
@@ -36,7 +48,7 @@ CSV_PATH = "session_log.csv"
 DEFAULTS = {
     "camera_index": CAMERA_INDEX,
     "check_interval_sec": CHECK_INTERVAL_SEC,
-    "bad_posture_frames": BAD_POSTURE_FRAMES,
+    "bad_posture_sec": BAD_POSTURE_SEC,
     "auto_calibration_frames": AUTO_CALIBRATION_FRAMES,
     "forward_lean_threshold": FORWARD_LEAN_THRESHOLD,
     "forward_z_threshold": FORWARD_Z_THRESHOLD,
@@ -49,6 +61,7 @@ DEFAULTS = {
     "health_recovery_rate": HEALTH_RECOVERY_RATE,
     "break_interval_min": BREAK_INTERVAL_SEC // 60,
     "sound_enabled": True,
+    "voice_enabled": True,
     "notifications_enabled": True,
     "break_reminder_enabled": True,
     "theme": "dark",

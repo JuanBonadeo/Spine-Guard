@@ -37,6 +37,7 @@ Ambas comparten el mismo `core/`: si mejora la deteccion de postura, mejora en l
 - **Deteccion de multiples problemas**: cabeza adelantada, encorvamiento (cabeza baja y hombros adelante), hombros tensos, cabeza inclinada e inclinacion lateral.
 - **Barra de salud**: indicador que baja cuando mantenes mala postura y se recupera al corregirla, estilo videojuego.
 - **Alertas escalables**: avisos que se intensifican segun la gravedad y duracion del problema.
+- **Alertas por voz (gTTS)**: cuando llevas rato encorvado, un aviso hablado ("sentate derecho") en escritorio y web. Las frases se generan una vez con gTTS y quedan cacheadas como MP3, asi que despues suenan al instante y sin internet.
 - **Recordatorios de descanso**: aviso configurable para levantarte y estirar cada cierto tiempo.
 - **Estadisticas de sesion**: porcentaje de buena postura, tiempo de uso, alertas emitidas y problemas mas frecuentes.
 - **Historial en CSV**: exporta los datos de cada sesion para revisar tu progreso.
@@ -61,6 +62,7 @@ Ambas comparten el mismo `core/`: si mejora la deteccion de postura, mejora en l
 | UI web | Flask + HTML/CSS/JS, video por MJPEG |
 | Graficos | Matplotlib (embebido en el dashboard) |
 | Notificaciones | plyer + winsound (escritorio) |
+| Voz (TTS) | gTTS (cache de MP3) — MCI/winmm en escritorio, `<audio>` en web |
 | System tray | pystray + Pillow |
 
 ## Instalacion

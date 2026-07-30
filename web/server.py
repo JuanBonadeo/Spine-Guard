@@ -1,12 +1,14 @@
+import os
 import threading
 import time
 
 import cv2
-from flask import Flask, Response, jsonify, render_template
+from flask import Flask, Response, abort, jsonify, render_template, request, send_file
 
 from config.defaults import CAMERA_INDEX
 from config.settings import Settings
 from core.capture import Camera
+from core.voice import audio_path, ensure_cached
 from web.engine import PostureEngine
 
 app = Flask(__name__)
@@ -45,6 +47,9 @@ def _capture_loop() -> None:
 
 def start_capture() -> None:
     global _capture_thread
+    # Genera el cache de voz (gTTS) en segundo plano: no bloquea el arranque
+    # y solo hace falta internet la primera vez.
+    threading.Thread(target=ensure_cached, daemon=True).start()
     if _capture_thread is None or not _capture_thread.is_alive():
         _capture_thread = threading.Thread(target=_capture_loop, daemon=True)
         _capture_thread.start()
@@ -75,6 +80,17 @@ def status():
     return jsonify(engine.get_status())
 
 
+@app.route("/voice/<sev>")
+def voice(sev: str):
+    # El navegador reproduce la alerta hablada (mismos MP3 que el escritorio).
+    if sev not in ("0", "1", "2", "break"):
+        abort(404)
+    path = audio_path(sev)
+    if not os.path.isfile(path):
+        abort(404)
+    return send_file(path, mimetype="audio/mpeg")
+
+
 @app.route("/recalibrate", methods=["POST"])
 def recalibrate():
     engine.request_recalibration()
@@ -84,3 +100,15 @@ def recalibrate():
 @app.route("/pause", methods=["POST"])
 def pause():
     return jsonify({"paused": engine.toggle_pause()})
+
+
+@app.route("/config", methods=["GET", "POST"])
+def config():
+    if request.method == "POST":
+        data = request.get_json(silent=True) or {}
+        return jsonify(engine.update_config(
+            check_interval_sec=data.get("check_interval_sec"),
+            bad_posture_sec=data.get("bad_posture_sec"),
+            break_interval_min=data.get("break_interval_min"),
+        ))
+    return jsonify(engine.get_config())

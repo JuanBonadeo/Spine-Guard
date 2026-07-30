@@ -22,7 +22,29 @@ const RING_C = 2 * Math.PI * 70; // 439.82
 const $ = (id) => document.getElementById(id);
 
 let lastAlertId = 0;
+let lastBreakId = 0;
 let toastTimer = null;
+
+// --- alertas por voz (gTTS servidas por /voice/<sev>) ---
+let voiceEnabled = (localStorage.getItem("pc-voice") || "on") !== "off";
+let audioUnlocked = false;
+
+// Los navegadores bloquean el autoplay hasta que hay un gesto del usuario.
+// Al primer click/tecla desbloqueamos el audio para la sesion.
+function unlockAudio() {
+  audioUnlocked = true;
+  document.removeEventListener("click", unlockAudio);
+  document.removeEventListener("keydown", unlockAudio);
+}
+document.addEventListener("click", unlockAudio);
+document.addEventListener("keydown", unlockAudio);
+
+function playVoice(severity) {
+  if (!voiceEnabled || !audioUnlocked) return;
+  try {
+    new Audio("/voice/" + severity).play().catch(() => {});
+  } catch (e) { /* sin audio: seguimos con el toast visual */ }
+}
 
 // --- construir las 6 badges ---
 const badgeEls = {};
@@ -102,10 +124,18 @@ function render(s) {
     (!s.reliable && !s.calibrating && !s.paused)
       ? "Confianza: " + Math.round(s.confidence * 100) + "%" : "";
 
-  // toast cuando se registra una nueva alerta
+  // toast + voz cuando se registra una nueva alerta
   if (s.alert_id > lastAlertId) {
     lastAlertId = s.alert_id;
     showToast("⚠ " + (s.message || "Postura incorrecta"), "danger");
+    playVoice(s.severity || 0);
+  }
+
+  // recordatorio de descanso
+  if (s.break_id > lastBreakId) {
+    lastBreakId = s.break_id;
+    showToast("☕ Hora de un descanso, levantate y estira", "info");
+    playVoice("break");
   }
 }
 
@@ -139,13 +169,76 @@ $("btn-calibrate").addEventListener("click", () => {
   fetch("/recalibrate", { method: "POST" });
 });
 
-// vistas aun no implementadas (Dashboard / Ajustes / Historial)
+// --- toggle de voz ---
+const voiceBtn = $("voice-toggle");
+function renderVoiceBtn() {
+  voiceBtn.textContent = voiceEnabled ? "🔊 Voz" : "🔇 Voz";
+  voiceBtn.classList.toggle("active", voiceEnabled);
+}
+voiceBtn.addEventListener("click", () => {
+  voiceEnabled = !voiceEnabled;
+  localStorage.setItem("pc-voice", voiceEnabled ? "on" : "off");
+  renderVoiceBtn();
+  showToast(voiceEnabled ? "Voz activada" : "Voz desactivada", "info");
+});
+renderVoiceBtn();
+
+// navegacion: Ajustes abre el modal de tiempos; el resto sigue en desarrollo
 document.querySelectorAll('.nav-item[data-view]').forEach((b) => {
   b.addEventListener("click", () => {
-    if (b.getAttribute("data-view") !== "monitor") {
+    const view = b.getAttribute("data-view");
+    if (view === "settings") {
+      openSettings();
+    } else if (view !== "monitor") {
       showToast("Vista en desarrollo", "info");
     }
   });
+});
+
+// --- modal de Ajustes: tiempos de aviso (via /config) ---
+const CFG_FIELDS = [
+  ["check_interval_sec", "cfg-check", (v) => Math.round(v) + " s"],
+  ["bad_posture_sec",    "cfg-bad",   (v) => Number(v).toFixed(1) + " s"],
+  ["break_interval_min", "cfg-break", (v) => Math.round(v) + " min"],
+];
+
+function renderCfgLabel(id, fmt) {
+  $(id + "-val").textContent = fmt($(id).value);
+}
+
+async function openSettings() {
+  try {
+    const cfg = await (await fetch("/config")).json();
+    for (const [key, id, fmt] of CFG_FIELDS) {
+      $(id).value = cfg[key];
+      renderCfgLabel(id, fmt);
+    }
+  } catch (e) { /* si falla, se muestran los ultimos valores conocidos */ }
+  $("settings-overlay").classList.remove("hidden");
+}
+
+async function saveConfig() {
+  const body = {};
+  for (const [key, id] of CFG_FIELDS) body[key] = Number($(id).value);
+  try {
+    await fetch("/config", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+  } catch (e) { showToast("No se pudo guardar", "warn"); }
+}
+
+for (const [, id, fmt] of CFG_FIELDS) {
+  const el = $(id);
+  el.addEventListener("input", () => renderCfgLabel(id, fmt)); // etiqueta en vivo
+  el.addEventListener("change", saveConfig);                    // guarda al soltar
+}
+$("cfg-close").addEventListener("click", () => {
+  $("settings-overlay").classList.add("hidden");
+});
+$("settings-overlay").addEventListener("click", (e) => {
+  if (e.target === $("settings-overlay")) $("settings-overlay").classList.add("hidden");
 });
 
 setInterval(poll, 500);

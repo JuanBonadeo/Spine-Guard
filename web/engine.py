@@ -4,13 +4,13 @@ import time
 import cv2
 
 from config.defaults import (
-    AUTO_CALIBRATION_FRAMES, BAD_POSTURE_FRAMES, CHECK_INTERVAL_SEC,
+    AUTO_CALIBRATION_FRAMES, BAD_POSTURE_SEC, CHECK_INTERVAL_SEC,
     FORWARD_LEAN_THRESHOLD, FORWARD_Z_THRESHOLD, HEAD_TILT_THRESHOLD,
     HEALTH_DECAY_RATE, HEALTH_RECOVERY_RATE, HYSTERESIS_FACTOR,
     LATERAL_LEAN_THRESHOLD, ONE_EURO_BETA, ONE_EURO_D_CUTOFF,
     ONE_EURO_MIN_CUTOFF, REBASELINE_RATE, SEVERITY_THRESHOLDS,
     SHOULDER_RAISE_THRESHOLD, SLOUCH_DROP_THRESHOLD,
-    SLOUCH_SHOULDER_THRESHOLD, VISIBILITY_THRESHOLD,
+    SLOUCH_SHOULDER_THRESHOLD, VISIBILITY_THRESHOLD, frames_from_seconds,
 )
 from config.settings import Settings
 from core.analyzer import PostureAnalyzer
@@ -64,7 +64,9 @@ class PostureEngine:
         )
 
         self._check_interval = s.get("check_interval_sec") or CHECK_INTERVAL_SEC
-        self._bad_frames_threshold = s.get("bad_posture_frames") or BAD_POSTURE_FRAMES
+        self._bad_posture_sec = s.get("bad_posture_sec") or BAD_POSTURE_SEC
+        self._bad_frames_threshold = frames_from_seconds(self._bad_posture_sec)
+        self._break_interval = (s.get("break_interval_min") or 45) * 60
 
         self._lock = threading.Lock()
         self._latest_jpeg: bytes | None = None
@@ -75,6 +77,8 @@ class PostureEngine:
         self._last_result = None
         self._last_alert_ts = 0.0
         self._alert_id = 0
+        self._last_break = time.time()
+        self._break_id = 0
         self._status: dict = {
             "calibrating": True,
             "calib_progress": 0.0,
@@ -88,6 +92,7 @@ class PostureEngine:
             "health": 1.0,
             "severity": 0,
             "alert_id": 0,
+            "break_id": 0,
             "session_min": 0.0,
             "good_pct": 0.0,
             "alerts": 0,
@@ -108,6 +113,7 @@ class PostureEngine:
                 self._calib_progress = progress
                 if progress >= 1.0:
                     self._calibrating = False
+                    self._last_break = time.time()  # el descanso se cuenta desde que arranca el monitoreo
             self._encode(frame)
             self._refresh_status(None)
             return
@@ -133,6 +139,12 @@ class PostureEngine:
         else:
             self._bad_count = 0
 
+        # Recordatorio de descanso (paridad con el escritorio).
+        if time.time() - self._last_break >= self._break_interval:
+            self._last_break = time.time()
+            self._break_id += 1
+            self.stats.register_break()
+
         display = self.analyzer.draw(frame, result)
         self._encode(display)
         self._refresh_status(result)
@@ -146,6 +158,30 @@ class PostureEngine:
     def toggle_pause(self) -> bool:
         self._paused = not self._paused
         return self._paused
+
+    # -- configuracion de tiempos (aplica en vivo + persiste) --
+
+    def get_config(self) -> dict:
+        return {
+            "check_interval_sec": int(self._check_interval),
+            "bad_posture_sec": round(self._bad_posture_sec, 1),
+            "break_interval_min": int(self._break_interval / 60),
+        }
+
+    def update_config(self, check_interval_sec=None, bad_posture_sec=None,
+                      break_interval_min=None) -> dict:
+        if check_interval_sec is not None:
+            self._check_interval = max(30, min(600, int(check_interval_sec)))
+            self._settings.set("check_interval_sec", self._check_interval)
+        if bad_posture_sec is not None:
+            self._bad_posture_sec = max(0.5, min(10.0, float(bad_posture_sec)))
+            self._bad_frames_threshold = frames_from_seconds(self._bad_posture_sec)
+            self._settings.set("bad_posture_sec", round(self._bad_posture_sec, 1))
+        if break_interval_min is not None:
+            minutes = max(10, min(90, int(break_interval_min)))
+            self._break_interval = minutes * 60
+            self._settings.set("break_interval_min", minutes)
+        return self.get_config()
 
     def _encode(self, frame_bgr) -> None:
         ok, buf = cv2.imencode(".jpg", frame_bgr, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
@@ -174,6 +210,7 @@ class PostureEngine:
                 "health": round(self.health.get_health(), 3),
                 "severity": self.health.get_severity(),
                 "alert_id": self._alert_id,
+                "break_id": self._break_id,
                 "session_min": round(summary.total_time_sec / 60, 1),
                 "good_pct": round(summary.good_percentage, 1),
                 "alerts": summary.total_alerts,

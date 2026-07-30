@@ -147,6 +147,57 @@
   pointer-events: none;
 }
 
+/* --- Modal de Ajustes (tiempos de aviso) --- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, .55);
+  backdrop-filter: blur(6px);
+  z-index: 200;
+}
+.modal-overlay.hidden { display: none; }
+.modal-card {
+  background: var(--bg-card);
+  border-radius: 16px;
+  width: min(460px, 90%);
+  padding: 28px 26px;
+  box-shadow: var(--card-shadow);
+}
+.modal-card h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+
+.cfg-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 6px 12px;
+  margin-top: 18px;
+}
+.cfg-row label { font-size: 13px; color: var(--text-primary); }
+.cfg-val {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 64px;
+  text-align: right;
+}
+.cfg-row input[type="range"] {
+  grid-column: 1 / -1;
+  width: 100%;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+.modal-actions .nav-item { width: auto; padding: 8px 20px; }
+
 /* --- Responsivo --- */
 @media (max-width: 900px) {
   .monitor { grid-template-columns: 1fr; height: auto; }

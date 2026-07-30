@@ -7,3 +7,4 @@ Pillow>=10.0
 customtkinter>=5.2
 matplotlib>=3.8
 flask>=3.0
+gTTS>=2.4

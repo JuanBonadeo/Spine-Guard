@@ -45,6 +45,34 @@
     <div id="confidence" class="caption"></div>
   </aside>
 </div>
+
+<!-- Ajustes de tiempos de aviso (se aplica en vivo via /config) -->
+<div id="settings-overlay" class="modal-overlay hidden">
+  <div class="modal-card">
+    <h2>Ajustes de avisos</h2>
+    <p class="calib-sub">Los cambios se aplican al instante.</p>
+
+    <div class="cfg-row">
+      <label for="cfg-check">Intervalo entre avisos</label>
+      <input type="range" id="cfg-check" min="30" max="600" step="10">
+      <span id="cfg-check-val" class="cfg-val">--</span>
+    </div>
+    <div class="cfg-row">
+      <label for="cfg-bad">Tiempo encorvado antes de avisar</label>
+      <input type="range" id="cfg-bad" min="0.5" max="10" step="0.5">
+      <span id="cfg-bad-val" class="cfg-val">--</span>
+    </div>
+    <div class="cfg-row">
+      <label for="cfg-break">Intervalo de descanso</label>
+      <input type="range" id="cfg-break" min="10" max="90" step="5">
+      <span id="cfg-break-val" class="cfg-val">--</span>
+    </div>
+
+    <div class="modal-actions">
+      <button id="cfg-close" class="nav-item">Cerrar</button>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block scripts %}

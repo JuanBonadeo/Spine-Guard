@@ -9,7 +9,7 @@ from core.notifier import PostureNotifier
 from core.session_stats import SessionStats
 from core.health_bar import HealthBar
 from config.defaults import (
-    CAMERA_INDEX, CHECK_INTERVAL_SEC, BAD_POSTURE_FRAMES,
+    CAMERA_INDEX, CHECK_INTERVAL_SEC, BAD_POSTURE_SEC, frames_from_seconds,
     AUTO_CALIBRATION_FRAMES, ONE_EURO_MIN_CUTOFF, ONE_EURO_BETA,
     ONE_EURO_D_CUTOFF, FORWARD_LEAN_THRESHOLD, FORWARD_Z_THRESHOLD,
     SLOUCH_DROP_THRESHOLD, SLOUCH_SHOULDER_THRESHOLD,
@@ -72,10 +72,12 @@ class SpineGuardApp(ctk.CTk):
             auto_calibration_frames=AUTO_CALIBRATION_FRAMES,
         )
 
+        voice_enabled = self.settings.get("voice_enabled")
         self.notifier = PostureNotifier(
             self.settings.get("check_interval_sec") or CHECK_INTERVAL_SEC,
             BEEP_LEVELS,
             (self.settings.get("break_interval_min") or 45) * 60,
+            voice_enabled=voice_enabled if voice_enabled is not None else True,
         )
 
         self.stats = SessionStats()
@@ -234,7 +236,9 @@ class SpineGuardApp(ctk.CTk):
             else:
                 self._bad_count = 0
 
-            bad_frames_threshold = self.settings.get("bad_posture_frames") or BAD_POSTURE_FRAMES
+            bad_frames_threshold = frames_from_seconds(
+                self.settings.get("bad_posture_sec") or BAD_POSTURE_SEC
+            )
             if self._bad_count >= bad_frames_threshold and self.notifier.should_notify():
                 self.notifier.notify(result.message, self.health.get_severity())
                 self.stats.register_alert()
@@ -317,6 +321,16 @@ class SpineGuardApp(ctk.CTk):
             mode = "dark" if value == "dark" else "light"
             ctk.set_appearance_mode(mode)
             self.theme = Theme(mode)
+        elif key == "voice_enabled":
+            self.notifier.set_voice_enabled(bool(value))
+        elif key == "check_interval_sec":
+            self.notifier.set_interval(int(value))
+        elif key == "break_interval_min":
+            self.notifier.set_break_interval(int(value) * 60)
+        elif key == "__reset__":
+            self.notifier.set_voice_enabled(bool(self.settings.get("voice_enabled")))
+            self.notifier.set_interval(int(self.settings.get("check_interval_sec") or CHECK_INTERVAL_SEC))
+            self.notifier.set_break_interval(int(self.settings.get("break_interval_min") or 45) * 60)
 
     def _restore_window(self):
         self.deiconify()

@@ -18,8 +18,8 @@ SLIDER_SECTIONS = [
     {
         "title": "Alertas",
         "items": [
-            ("check_interval_sec", "Intervalo entre alertas (seg)", 30, 600, 0),
-            ("bad_posture_frames", "Frames consecutivos", 3, 30, 0),
+            ("check_interval_sec", "Intervalo entre avisos (seg)", 30, 600, 0),
+            ("bad_posture_sec", "Tiempo encorvado antes de avisar (seg)", 0.5, 10, 1),
         ],
     },
     {
@@ -132,6 +132,7 @@ class SettingsView(ctk.CTkScrollableFrame):
 
         switches = [
             ("sound_enabled", "Sonido habilitado"),
+            ("voice_enabled", "Alertas por voz"),
             ("notifications_enabled", "Notificaciones del sistema"),
             ("break_reminder_enabled", "Recordatorio de break"),
         ]
